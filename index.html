@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RackScope IA - Cableado Estructurado</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #2d3748;
+            --primary-color: #1a365d;
+            --secondary-color: #2b6cb0;
+            --accent-color: #edf2f7;
+            --danger-color: #e53e3e;
+            --success-color: #38a169;
+            --warning-color: #d69e2e;
+            --rack-bg: #111827;
+            --slot-border: #374151;
+            --font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-family); background-color: var(--bg-color); color: var(--text-color); line-height: 1.5; }
+        *:focus-visible { outline: 3px solid var(--secondary-color); outline-offset: 2px; }
+
+        header { background-color: var(--primary-color); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        header h1 { font-size: 1.5rem; }
+        .header-sub { font-size: 0.85rem; opacity: 0.8; }
+
+        main { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+
+        /* KPI Dashboard */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .kpi-card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid var(--secondary-color); }
+        .kpi-card h4 { font-size: 0.75rem; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
+        .kpi-card .value { font-size: 1.5rem; font-weight: bold; color: var(--primary-color); margin-top: 0.25rem; }
+
+        /* Actions Bar */
+        .action-bar { background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .search-box { flex-grow: 1; max-width: 400px; }
+        .search-box input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #cbd5e0; border-radius: 4px; }
+        
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .btn { padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.85rem; color: white; transition: background 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+        .btn-primary { background: var(--primary-color); }
+        .btn-primary:hover { background: #0d213a; }
+        .btn-success { background: var(--success-color); }
+        .btn-success:hover { background: #2f855a; }
+        .btn-danger { background: var(--danger-color); }
+        .btn-danger:hover { background: #c53030; }
+        .btn-secondary { background: #4a5568; }
+        .btn-secondary:hover { background: #2d3748; }
+
+        /* Main Grid */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 900px) { .dashboard-grid { grid-template-columns: 380px 1fr; } }
+
+        /* Visual Rack Structure */
+        .rack-container { background: var(--rack-bg); border: 6px solid #1f2937; border-radius: 6px; padding: 12px; width: 100%; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .rack-header { color: white; text-align: center; margin-bottom: 12px; border-bottom: 2px solid #374151; padding-bottom: 8px; }
+        .rack-header h2 { font-size: 1.1rem; }
+
+        .u-slot { display: flex; width: 100%; min-height: 38px; border-bottom: 1px dashed var(--slot-border); background: #1f2937; color: white; transition: filter 0.2s; }
+        .u-slot:last-child { border-bottom: none; }
+        .u-number { width: 38px; background: #111827; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; border-right: 2px solid #374151; flex-shrink: 0; color: #9ca3af; }
+        .eq-content { padding: 4px 10px; display: flex; flex-direction: column; justify-content: center; flex-grow: 1; overflow: hidden; pointer-events: none; }
+        .eq-content strong { font-size: 0.85rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .eq-content small { font-size: 0.7rem; opacity: 0.8; }
+        
+        .u-slot.empty { color: #4b5563; }
+        .u-slot.empty .eq-content { font-style: italic; align-items: center; font-size: 0.8rem; }
+        .u-slot.empty:hover { background: #374151; cursor: pointer; color: #d1d5db; }
+        
+        .u-slot.occupied { border: 1px solid #000; z-index: 1; position: relative; cursor: pointer; }
+        .u-slot.occupied:hover { filter: brightness(1.15); }
+        .u-slot.occupied.activo { background: #2563eb; }
+        .u-slot.occupied.pasivo { background: #4b5563; }
+        .u-slot.occupied.energia { background: #dc2626; }
+
+        /* Panel details */
+        .panel-info { background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .panel-info h3 { border-bottom: 2px solid var(--primary-color); padding-bottom: 0.5rem; margin-bottom: 1rem; color: var(--primary-color); font-size: 1.1rem; }
+        
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.85rem; }
+        .form-group input, .form-group select { width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 4px; font-family: inherit; font-size: 0.9rem; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
+        .badge.confirmado { background: var(--success-color); color: white; }
+
+        .log-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.8rem; }
+        .log-table th, .log-table td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: left; }
+        .log-table th { background: #f7fafc; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>RackScope IA</h1>
+            <div class="header-sub">Universidad Compensar — Cableado Estructurado (Rack 28U)</div>
+        </div>
+        <div>
+            <span class="badge confirmado" id="system-status">Cargando...</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Dashboard KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <h4>Capacidad Total</h4>
+                <div class="value" id="kpi-total-u">28 U</div>
+            </div>
+            <div class="kpi-card">
+                <h4>U Ocupadas</h4>
+                <div class="value" id="kpi-occupied-u">0 U</div>
+            </div>
+            <div class="kpi-card">
+                <h4>U Disponibles</h4>
+                <div class="value" id="kpi-free-u">28 U</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Ocupación</h4>
+                <div class="value" id="kpi-percentage">0%</div>
+            </div>
+            <div class="kpi-card">
+                <h4>Equipos Totales</h4>
+                <div class="value" id="kpi-total-eq">0</div>
+            </div>
+        </div>
+
+        <!-- Barra de Acciones / Importar - Exportar -->
+        <div class="action-bar">
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Buscar equipo, IP o modelo..." oninput="App.filterEquipments()">
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="document.getElementById('import-file').click()">Importar JSON</button>
+                <input type="file" id="import-file" class="hidden" accept=".json" onchange="App.importJSON(event)">
+                <button class="btn btn-success" onclick="App.exportJSON()">Exportar JSON</button>
+                <button class="btn btn-secondary" onclick="App.exportCSV()">Exportar CSV</button>
+                <button class="btn btn-danger" onclick="App.resetData()">Limpiar Todo</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Central -->
+        <div class="dashboard-grid">
+            <!-- Vista Gráfica del Rack -->
+            <div id="rack-view-container"></div>
+
+            <!-- Panel de Control y Formulario -->
+            <div class="panel-info">
+                <h3>Detalles del Dispositivo</h3>
+                
+                <div id="empty-state">
+                    <p style="color: #718096; font-size: 0.9rem;">
+                        El rack está limpio y listo. Haz clic en <strong>"Importar JSON"</strong> para cargar tu inventario o en un slot <strong>[VACÍO]</strong> para agregar equipos manualmente.
+                    </p>
+                </div>
+
+                <form id="eq-form" class="hidden">
+                    <input type="hidden" id="eq-id">
+                    <input type="hidden" id="eq-rackid">
+
+                    <div class="form-group">
+                        <label for="eq-nombre">Nombre del Dispositivo</label>
+                        <input type="text" id="eq-nombre" required>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="eq-modelo">Marca / Modelo</label>
+                            <input type="text" id="eq-modelo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eq-ip">IP de Gestión / Máscara</label>
+                            <input type="text" id="eq-ip" placeholder="ej. 192.168.1.1/24">
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="eq-uinicio">U Inicio (Límite Inferior)</label>
+                            <input type="number" id="eq-uinicio" min="1" max="28" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="eq-ufin">U Fin (Límite Superior)</label>
+                            <input type="number" id="eq-ufin" min="1" max="28" required>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label for="eq-estado">Categoría / Estado</label>
+                            <select id="eq-estado">
+                                <option value="Activo">Activo (Router / Switch)</option>
+                                <option value="Pasivo">Pasivo (Patch Panel / Organizador)</option>
+                                <option value="Energia">Energía (PDU / UPS)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="eq-orientacion">Orientación Cara</label>
+                            <select id="eq-orientacion">
+                                <option value="Frontal">Frontal</option>
+                                <option value="Posterior">Posterior</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eq-servicio">Servicio / Rol en Red</label>
+                        <input type="text" id="eq-servicio" placeholder="ej. Gateway Principal / WAN">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eq-validacion">Nivel de Certeza</label>
+                        <select id="eq-validacion">
+                            <option value="[CONFIRMADO]">[CONFIRMADO] - Verificado en Laboratorio</option>
+                            <option value="[PENDIENTE]">[PENDIENTE] - Falta Verificación</option>
+                            <option value="[INFERENCIA POR VALIDAR]">[INFERENCIA POR VALIDAR] - Asumido por Topología</option>
+                            <option value="[EJEMPLO DIDÁCTICO]">[EJEMPLO DIDÁCTICO] - Datos de Prueba</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">Guardar Cambios</button>
+                        <button type="button" class="btn btn-danger" id="btn-delete" onclick="App.deleteEquipment()">Eliminar</button>
+                        <button type="button" class="btn btn-secondary" onclick="App.hideForm()">Cancelar</button>
+                    </div>
+                </form>
+
+                <!-- Bitácora -->
+                <div style="margin-top: 2rem;">
+                    <h3>Bitácora de Eventos</h3>
+                    <div style="max-height: 160px; overflow-y: auto;">
+                        <table class="log-table">
+                            <thead>
+                                <tr><th>Hora</th><th>Acción</th><th>Detalle</th></tr>
+                            </thead>
+                            <tbody id="log-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const Security = {
+            escapeHTML: (str) => {
+                if (typeof str !== 'string') return str;
+                return str.replace(/[&<>'"]/g, tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
+            }
+        };
+
+        const StorageManager = {
+            // Clave renovada para forzar el vaciado del almacenamiento viejo
+            STORAGE_KEY: 'rackscope_db_clean_v2',
+            defaultData: {
+                rack_config: { id: "RACK-LAB-01", nombre: "RACK-LABORATORIO-REDES", capacidad_u: 28, etiqueta_validacion: "[CONFIRMADO]" },
+                equipos: [],
+                bitacora: []
+            },
+            getData: () => { try { return JSON.parse(localStorage.getItem(StorageManager.STORAGE_KEY)); } catch(e) { return null; } },
+            saveData: (data) => { localStorage.setItem(StorageManager.STORAGE_KEY, JSON.stringify(data)); },
+            logAction: (accion, detalle) => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                if (!data.bitacora) data.bitacora = [];
+                data.bitacora.unshift({ fecha: new Date().toLocaleTimeString(), accion, detalle });
+                StorageManager.saveData(data);
+                App.renderLog();
+            }
+        };
+
+        const App = {
+            init: () => {
+                if (!StorageManager.getData()) {
+                    StorageManager.saveData(StorageManager.defaultData);
+                    StorageManager.logAction("INICIALIZACIÓN", "Rack de 28U inicializado completamente vacío.");
+                }
+                document.getElementById('system-status').textContent = 'SISTEMA LISTO [CONFIRMADO]';
+                App.renderAll();
+                document.getElementById('eq-form').addEventListener('submit', App.saveEquipment);
+            },
+
+            renderAll: () => {
+                App.renderRack();
+                App.updateKPIs();
+                App.renderLog();
+            },
+
+            updateKPIs: () => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                const totalU = data.rack_config ? data.rack_config.capacidad_u : 28;
+                let occupiedU = 0;
+                const equipos = data.equipos || [];
+                
+                equipos.forEach(eq => { occupiedU += (eq.uFin - eq.uInicio + 1); });
+                const freeU = totalU - occupiedU;
+                const percentage = Math.round((occupiedU / totalU) * 100);
+
+                document.getElementById('kpi-total-u').textContent = `${totalU} U`;
+                document.getElementById('kpi-occupied-u').textContent = `${occupiedU} U`;
+                document.getElementById('kpi-free-u').textContent = `${freeU} U`;
+                document.getElementById('kpi-percentage').textContent = `${percentage}%`;
+                document.getElementById('kpi-total-eq').textContent = equipos.length;
+            },
+
+            renderRack: (filterText = '') => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                const rack = data.rack_config || { nombre: "RACK-LABORATORIO-REDES", capacidad_u: 28 };
+                let equipos = data.equipos || [];
+
+                if (filterText) {
+                    const query = filterText.toLowerCase();
+                    equipos = equipos.filter(e => e.nombre.toLowerCase().includes(query) || e.modelo.toLowerCase().includes(query) || (e.ip_gestion && e.ip_gestion.toLowerCase().includes(query)));
+                }
+                
+                let html = `
+                    <div class="rack-container">
+                        <div class="rack-header">
+                            <h2>${Security.escapeHTML(rack.nombre)}</h2>
+                            <small>Capacidad: ${rack.capacidad_u}U | Laboratorio Compensar</small>
+                        </div>
+                        <div class="rack-body">
+                `;
+
+                for (let u = rack.capacidad_u; u >= 1; u--) {
+                    let eq = equipos.find(e => u >= e.uInicio && u <= e.uFin);
+
+                    if (eq) {
+                        if (u === eq.uFin) {
+                            let heightMulti = (eq.uFin - eq.uInicio) + 1;
+                            let estadoClase = eq.estado ? eq.estado.toLowerCase() : 'activo';
+                            html += `
+                                <div class="u-slot occupied ${estadoClase}" style="height: ${heightMulti * 38}px;" onclick="App.editEquipment('${eq.id}')">
+                                    <div class="u-number">${u}${heightMulti > 1 ? '-'+eq.uInicio : ''}</div>
+                                    <div class="eq-content">
+                                        <strong>${Security.escapeHTML(eq.nombre)}</strong>
+                                        <small>${Security.escapeHTML(eq.modelo)} ${eq.ip_gestion && eq.ip_gestion !== 'N/A' ? '| IP: ' + Security.escapeHTML(eq.ip_gestion) : ''}</small>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        html += `
+                            <div class="u-slot empty" style="height: 38px" onclick="App.newEquipment(${u})">
+                                <div class="u-number">${u}</div>
+                                <div class="eq-content">[VACÍO]</div>
+                            </div>
+                        `;
+                    }
+                }
+                html += `</div></div>`;
+                document.getElementById('rack-view-container').innerHTML = html;
+            },
+
+            renderLog: () => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                const tbody = document.getElementById('log-tbody');
+                tbody.innerHTML = (data.bitacora || []).slice(0, 5).map(l => `
+                    <tr>
+                        <td>${Security.escapeHTML(l.fecha)}</td>
+                        <td><strong>${Security.escapeHTML(l.accion)}</strong></td>
+                        <td>${Security.escapeHTML(l.detalle)}</td>
+                    </tr>
+                `).join('');
+            },
+
+            showForm: () => {
+                document.getElementById('empty-state').classList.add('hidden');
+                document.getElementById('eq-form').classList.remove('hidden');
+            },
+
+            hideForm: () => {
+                document.getElementById('empty-state').classList.remove('hidden');
+                document.getElementById('eq-form').classList.add('hidden');
+                document.getElementById('eq-form').reset();
+            },
+
+            newEquipment: (uPos) => {
+                App.hideForm();
+                App.showForm();
+                document.getElementById('eq-id').value = '';
+                document.getElementById('eq-rackid').value = 'RACK-LAB-01';
+                document.getElementById('eq-uinicio').value = uPos;
+                document.getElementById('eq-ufin').value = uPos;
+                document.getElementById('eq-validacion').value = '[CONFIRMADO]';
+                document.getElementById('btn-delete').classList.add('hidden');
+            },
+
+            editEquipment: (id) => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                const eq = (data.equipos || []).find(e => e.id === id);
+                if (!eq) return;
+
+                App.showForm();
+                document.getElementById('eq-id').value = eq.id;
+                document.getElementById('eq-rackid').value = eq.rackId;
+                document.getElementById('eq-nombre').value = eq.nombre;
+                document.getElementById('eq-modelo').value = eq.modelo;
+                document.getElementById('eq-ip').value = eq.ip_gestion || '';
+                document.getElementById('eq-uinicio').value = eq.uInicio;
+                document.getElementById('eq-ufin').value = eq.uFin;
+                document.getElementById('eq-estado').value = eq.estado || 'Activo';
+                document.getElementById('eq-orientacion').value = eq.orientacion || 'Frontal';
+                document.getElementById('eq-servicio').value = eq.servicio || '';
+                document.getElementById('eq-validacion').value = eq.etiquetaValidacion || '[CONFIRMADO]';
+                document.getElementById('btn-delete').classList.remove('hidden');
+            },
+
+            saveEquipment: (e) => {
+                e.preventDefault();
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                if (!data.equipos) data.equipos = [];
+                
+                const eqData = {
+                    id: document.getElementById('eq-id').value || 'EQ-' + Date.now(),
+                    rackId: document.getElementById('eq-rackid').value,
+                    nombre: document.getElementById('eq-nombre').value,
+                    modelo: document.getElementById('eq-modelo').value,
+                    ip_gestion: document.getElementById('eq-ip').value || 'N/A',
+                    uInicio: parseInt(document.getElementById('eq-uinicio').value),
+                    uFin: parseInt(document.getElementById('eq-ufin').value),
+                    estado: document.getElementById('eq-estado').value,
+                    orientacion: document.getElementById('eq-orientacion').value,
+                    servicio: document.getElementById('eq-servicio').value || 'N/A',
+                    etiquetaValidacion: document.getElementById('eq-validacion').value
+                };
+
+                if (eqData.uInicio > eqData.uFin) {
+                    alert("Error: La U de inicio debe ser menor o igual a la U final.");
+                    return;
+                }
+
+                const overlap = data.equipos.some(item => {
+                    if (item.id === eqData.id) return false;
+                    if (item.orientacion !== eqData.orientacion) return false;
+                    return (eqData.uInicio <= item.uFin && eqData.uFin >= item.uInicio);
+                });
+
+                if (overlap) {
+                    alert(`Error de colisión: Ya existe un equipo instalado en la misma U en la cara ${eqData.orientacion}.`);
+                    return;
+                }
+
+                const index = data.equipos.findIndex(item => item.id === eqData.id);
+                if (index > -1) {
+                    data.equipos[index] = eqData;
+                    StorageManager.logAction("MODIFICACIÓN", `Equipo ${eqData.nombre} actualizado.`);
+                } else {
+                    data.equipos.push(eqData);
+                    StorageManager.logAction("CREACIÓN", `Equipo ${eqData.nombre} agregado en U${eqData.uInicio}.`);
+                }
+
+                StorageManager.saveData(data);
+                App.renderAll();
+                App.hideForm();
+            },
+
+            deleteEquipment: () => {
+                const id = document.getElementById('eq-id').value;
+                if (!id) return;
+
+                if (confirm("¿Estás seguro de eliminar este dispositivo del inventario físico del rack?")) {
+                    const data = StorageManager.getData() || StorageManager.defaultData;
+                    const eq = (data.equipos || []).find(e => e.id === id);
+                    data.equipos = (data.equipos || []).filter(e => e.id !== id);
+                    
+                    StorageManager.saveData(data);
+                    StorageManager.logAction("ELIMINACIÓN", `Equipo ${eq ? eq.nombre : id} removido.`);
+                    App.renderAll();
+                    App.hideForm();
+                }
+            },
+
+            filterEquipments: () => {
+                const query = document.getElementById('search-input').value;
+                App.renderRack(query);
+            },
+
+            exportJSON: () => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                const jsonStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `inventario_rack_28u_${new Date().toISOString().slice(0,10)}.json`;
+                a.click();
+                StorageManager.logAction("EXPORTAR", "Base de datos exportada en JSON.");
+            },
+
+            exportCSV: () => {
+                const data = StorageManager.getData() || StorageManager.defaultData;
+                let csv = "ID,Nombre,Modelo,U_Inicio,U_Fin,Estado,IP_Gestion,Servicio,Certeza\n";
+                (data.equipos || []).forEach(e => {
+                    csv += `"${e.id}","${e.nombre}","${e.modelo}",${e.uInicio},${e.uFin},"${e.estado}","${e.ip_gestion}","${e.servicio}","${e.etiquetaValidacion}"\n`;
+                });
+                const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `inventario_rack_28u_${new Date().toISOString().slice(0,10)}.csv`;
+                a.click();
+                StorageManager.logAction("EXPORTAR", "Inventario exportado en CSV.");
+            },
+
+            importJSON: (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (importedData.equipos && Array.isArray(importedData.equipos)) {
+                            StorageManager.saveData(importedData);
+                            StorageManager.logAction("IMPORTAR", "Inventario cargado desde JSON.");
+                            App.renderAll();
+                            alert("¡Inventario cargado exitosamente!");
+                        } else {
+                            alert("Error: El archivo JSON no tiene una estructura válida de RackScope.");
+                        }
+                    } catch (err) {
+                        alert("Error al leer el archivo JSON.");
+                    }
+                };
+                reader.readAsText(file);
+            },
+
+            resetData: () => {
+                if (confirm("¿Deseas limpiar todo el inventario y dejar el rack de 28U completamente vacío?")) {
+                    localStorage.removeItem(StorageManager.STORAGE_KEY);
+                    App.init();
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', App.init);
+    </script>
+</body>
+</html>

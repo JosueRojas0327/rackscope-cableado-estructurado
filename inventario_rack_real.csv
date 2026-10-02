@@ -1,0 +1,9 @@
+ID,Nombre,Modelo,U_Inicio,U_Fin,Estado,IP_Gestion,Servicio,Certeza
+EQ-001,Router Cisco 4300,Cisco ISR 4331,25,25,Activo,192.168.1.1/24,Gateway Principal / WAN,[CONFIRMADO]
+EQ-002,Switch Catalyst C9300L-24,Cisco C9300L-24T,23,23,Activo,192.168.1.10/24,Switch Distribución Capa 3,[CONFIRMADO]
+EQ-003,Switch Catalyst 48 Puertos,Cisco 2960 Series,21,21,Activo,192.168.1.11/24,Conmutación Acceso Lab,[CONFIRMADO]
+EQ-004,Bandeja Lanza Cables,Generic / Quest 2U,16,17,Pasivo,N/A,Paso y Guiado de Par Trenzado,[CONFIRMADO]
+EQ-005,Router Cisco ISR 4200,Cisco ISR 4221,14,14,Activo,192.168.1.2/24,Enrutamiento Secundario / Prácticas,[CONFIRMADO]
+EQ-006,Switch Capa 3 Cisco,Cisco Catalyst 3560,12,12,Activo,192.168.1.12/24,Inter-VLAN Routing,[CONFIRMADO]
+EQ-007,Switch Huawei eKitEngine,Huawei S220 Series,10,10,Activo,192.168.1.15/24,Prácticas Multimarca,[CONFIRMADO]
+EQ-008,Multitoma PDU 8 Salidas,Quest 1U,2,3,Energia,N/A,Distribución Eléctrica 120V AC,[CONFIRMADO]

@@ -1,0 +1,153 @@
+{
+  "rack_config": {
+    "id": "RACK-LAB-01",
+    "nombre": "RACK-LABORATORIO-REDES",
+    "capacidad_u": 28,
+    "orientacion_u": "ascendente",
+    "sede": "Universidad Compensar",
+    "cuarto_telecom": "Laboratorio de Redes",
+    "etiqueta_validacion": "[CONFIRMADO]"
+  },
+  "equipos": [
+    {
+      "id": "EQ-001",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Router Cisco 4300",
+      "modelo": "Cisco ISR 4331",
+      "uInicio": 25,
+      "uFin": 25,
+      "orientacion": "Frontal",
+      "estado": "Activo",
+      "ip_gestion": "192.168.1.1/24",
+      "servicio": "Gateway Principal / WAN",
+      "energia": {
+        "fuenteA": { "pdu": "Quest 1U (U02-U03)", "circuito": "C1-120V" },
+        "fuenteB": { "pdu": "N/A", "circuito": "N/A" }
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-002",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Switch Catalyst C9300L-24",
+      "modelo": "Cisco C9300L-24T",
+      "uInicio": 23,
+      "uFin": 23,
+      "orientacion": "Frontal",
+      "estado": "Activo",
+      "ip_gestion": "192.168.1.10/24",
+      "servicio": "Switch Distribución Capa 3",
+      "energia": {
+        "fuenteA": { "pdu": "Quest 1U (U02-U03)", "circuito": "C1-120V" },
+        "fuenteB": null
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-003",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Switch Catalyst 48 Puertos",
+      "modelo": "Cisco 2960 Series",
+      "uInicio": 21,
+      "uFin": 21,
+      "orientacion": "Frontal",
+      "estado": "Activo",
+      "ip_gestion": "192.168.1.11/24",
+      "servicio": "Conmutación Acceso Lab",
+      "energia": {
+        "fuenteA": { "pdu": "Quest 1U (U02-U03)", "circuito": "C1-120V" },
+        "fuenteB": null
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-004",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Bandeja Lanza Cables",
+      "modelo": "Generic / Quest 2U",
+      "uInicio": 16,
+      "uFin": 17,
+      "orientacion": "Frontal",
+      "estado": "Pasivo",
+      "ip_gestion": "N/A",
+      "servicio": "Paso y Guiado de Par Trenzado",
+      "energia": null,
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-005",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Router Cisco ISR 4200",
+      "modelo": "Cisco ISR 4221",
+      "uInicio": 14,
+      "uFin": 14,
+      "orientacion": "Frontal",
+      "estado": "Activo",
+      "ip_gestion": "192.168.1.2/24",
+      "servicio": "Enrutamiento Secundario / Prácticas",
+      "energia": {
+        "fuenteA": { "pdu": "Quest 1U (U02-U03)", "circuito": "C1-120V" },
+        "fuenteB": null
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-006",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Switch Capa 3 Cisco",
+      "modelo": "Cisco Catalyst 3560",
+      "uInicio": 12,
+      "uFin": 12,
+      "orientacion": "Frontal",
+      "estado": "Activo",
+      "ip_gestion": "192.168.1.12/24",
+      "servicio": "Inter-VLAN Routing",
+      "energia": {
+        "fuenteA": { "pdu": "Quest 1U (U02-U03)", "circuito": "C1-120V" },
+        "fuenteB": null
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-007",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Switch Huawei eKitEngine",
+      "modelo": "Huawei S220 Series",
+      "uInicio": 10,
+      "uFin": 10,
+      "orientacion": "Frontal",
+      "estado": "Activo",
+      "ip_gestion": "192.168.1.15/24",
+      "servicio": "Prácticas Multimarca",
+      "energia": {
+        "fuenteA": { "pdu": "Quest 1U (U02-U03)", "circuito": "C1-120V" },
+        "fuenteB": null
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    },
+    {
+      "id": "EQ-008",
+      "rackId": "RACK-LAB-01",
+      "nombre": "Multitoma PDU 8 Salidas",
+      "modelo": "Quest 1U",
+      "uInicio": 2,
+      "uFin": 3,
+      "orientacion": "Posterior",
+      "estado": "Energia",
+      "ip_gestion": "N/A",
+      "servicio": "Distribución Eléctrica 120V AC",
+      "energia": {
+        "fuenteA": { "pdu": "Acometida Principal A", "circuito": "Tablero Lab-01" },
+        "fuenteB": null
+      },
+      "etiquetaValidacion": "[CONFIRMADO]"
+    }
+  ],
+  "bitacora": [
+    {
+      "fecha": "2026-10-02T00:00:00Z",
+      "accion": "INICIALIZACIÓN",
+      "detalle": "Generación del archivo oficial de inventario de laboratorio 28U."
+    }
+  ]
+}
